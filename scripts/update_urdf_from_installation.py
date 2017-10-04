@@ -4,6 +4,15 @@ import sys
 import xmltodict
 import os.path
 import gzip
+from shutil import copyfile
+
+joints = []
+joints.append("shoulder_pan_joint")
+joints.append("shoulder_lift_joint")
+joints.append("elbow_joint")
+joints.append("wrist_1_joint")
+joints.append("wrist_2_joint")
+joints.append("wrist_3_joint")
 
 def getList(data):
     data = data.replace("[", "")
@@ -31,28 +40,52 @@ def getSafetySettings(safetyData):
 
 def update_urdf(urdf_location, installation_location):
     if not os.path.isfile(urdf_location):
-        print "INVALID URDF LOCATION"
+        print "Invalid URDF Location"
         return
     if not os.path.isfile(installation_location):
-        print "INVALID INSTALLATION LOCATION"
+        print "Invalid Installation Location"
         return
 
+    #try:
     urdf_file = open(urdf_location)
     urdf_dict = xmltodict.parse(urdf_file.read())
     urdf_file.close()
-    #print(xmltodict.unparse(urdf_dict, pretty=True))
 
-    install_xml = installation_location[:installation_location.rindex(".")] + ".xml"
-    inF = gzip.open(installation_location, 'rb')
-    outF = open(install_xml, 'wb')
-    outF.write( inF.read() )
-    inF.close()
-    outF.close()
+    for macro in urdf_dict["robot"]["xacro:macro"]:
+        if macro["@name"] == "ur10_robot" or macro["@name"] == "ur5_robot" or macro["@name"] == "ur3_robot":
+            for joint in macro["joint"]:
+                try:
+                    for i in range(len(joints)):
+                        if joints[i] in joint["@name"]:
+                            print str(i) + " - " + joint["@name"]
+                except:
+                    pass
+    #except:
+    #    print "Error Parsing URDF "
+#        return
 
-    install_file = open(install_xml)
-    install_dict = xmltodict.parse(install_file.read())
-    install_file.close()
+    try:
+        install_xml = installation_location[:installation_location.rindex(".")] + ".xml"
+        inF = gzip.open(installation_location, 'rb')
+        outF = open(install_xml, 'wb')
+        outF.write( inF.read() )
+        inF.close()
+        outF.close()
+    except:
+        print "Error Extracting Installation File"
+        return
+
+    try:
+        install_file = open(install_xml)
+        install_dict = xmltodict.parse(install_file.read())
+        install_file.close()
+    except:
+        print "Error Parsing Installation"
+        return
+
     safety_dict = getSafetySettings(install_dict["Installation"]["SafetySettings"])
+
+    copyfile(urdf_location, urdf_location + ".BKP")
 
 if __name__ == '__main__':
 
