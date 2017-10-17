@@ -8,7 +8,7 @@ project(ur_installation_to_urdf)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  universal_robot
+  ur_description
 )
 
 ## System dependencies are found with CMake's conventions
@@ -103,7 +103,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ur_installation_to_urdf
-#  CATKIN_DEPENDS universal_robot
+#  CATKIN_DEPENDS ur_description
 #  DEPENDS system_lib
 )
 
